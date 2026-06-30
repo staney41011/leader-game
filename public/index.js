@@ -3,25 +3,14 @@
 
   var App = window.LeaderApp;
   var gameId = App.getGameId();
-  var input = App.$("#gameIdInput");
   var storeMode = App.$("#storeMode");
   var countryLinks = App.$("#countryLinks");
-
-  input.value = gameId;
-
-  App.$("#saveGameIdButton").addEventListener("click", function () {
-    App.setGameId(input.value);
-  });
-
-  input.addEventListener("keydown", function (event) {
-    if (event.key === "Enter") App.setGameId(input.value);
-  });
 
   function renderCountries(state) {
     countryLinks.innerHTML = App.countryList(state).map(function (country) {
       return [
         '<a class="country-tile" href="' + App.escapeHtml(App.withGame("country.html", gameId, { id: country.id })) + '">',
-        '<span class="country-flag">' + country.flag + '</span>',
+        App.countryIcon(country, "large"),
         '<strong>' + App.escapeHtml(country.name) + '</strong>',
         '<small>' + country.id + '</small>',
         '</a>'

@@ -1,24 +1,24 @@
 (function () {
   "use strict";
 
-  var APP_VERSION = "1.0.0";
+  var APP_VERSION = "2.0.0";
   var DEFAULT_GAME_ID = "leader-main";
   var PLAYER_COUNT = 6;
 
   var COUNTRIES = [
-    { id: "US", flag: "🇺🇸", name: "美國", color: "#2563eb", rival: "CN" },
-    { id: "CN", flag: "🇨🇳", name: "中國", color: "#dc2626", rival: "US" },
-    { id: "JP", flag: "🇯🇵", name: "日本", color: "#be123c", rival: "RU" },
-    { id: "RU", flag: "🇷🇺", name: "俄羅斯", color: "#7c3aed", rival: "JP" },
-    { id: "DE", flag: "🇩🇪", name: "德國", color: "#525252", rival: "FR" },
-    { id: "FR", flag: "🇫🇷", name: "法國", color: "#0891b2", rival: "DE" },
-    { id: "GB", flag: "🇬🇧", name: "英國", color: "#1d4ed8", rival: "IN" },
-    { id: "IN", flag: "🇮🇳", name: "印度", color: "#ea580c", rival: "GB" },
-    { id: "ID", flag: "🇮🇩", name: "印尼", color: "#b91c1c", rival: "AU" },
-    { id: "SA", flag: "🇸🇦", name: "沙烏地", color: "#15803d", rival: "ZA" },
-    { id: "ZA", flag: "🇿🇦", name: "南非", color: "#0f766e", rival: "BR" },
-    { id: "BR", flag: "🇧🇷", name: "巴西", color: "#65a30d", rival: "SA" },
-    { id: "AU", flag: "🇦🇺", name: "澳洲", color: "#0369a1", rival: "ID" }
+    { id: "US", flag: "🇺🇸", icon: "🗽", name: "美國", color: "#2563eb", rival: "CN" },
+    { id: "CN", flag: "🇨🇳", icon: "🏮", name: "中國", color: "#dc2626", rival: "US" },
+    { id: "JP", flag: "🇯🇵", icon: "🗻", name: "日本", color: "#be123c", rival: "RU" },
+    { id: "RU", flag: "🇷🇺", icon: "★", name: "俄羅斯", color: "#7c3aed", rival: "JP" },
+    { id: "DE", flag: "🇩🇪", icon: "⚙", name: "德國", color: "#525252", rival: "FR" },
+    { id: "FR", flag: "🇫🇷", icon: "🗼", name: "法國", color: "#0891b2", rival: "DE" },
+    { id: "GB", flag: "🇬🇧", icon: "♛", name: "英國", color: "#1d4ed8", rival: "IN" },
+    { id: "IN", flag: "🇮🇳", icon: "🪷", name: "印度", color: "#ea580c", rival: "GB" },
+    { id: "ID", flag: "🇮🇩", icon: "🌋", name: "印尼", color: "#b91c1c", rival: "AU" },
+    { id: "SA", flag: "🇸🇦", icon: "🕌", name: "沙烏地", color: "#15803d", rival: "ZA" },
+    { id: "ZA", flag: "🇿🇦", icon: "◆", name: "南非", color: "#0f766e", rival: "BR" },
+    { id: "BR", flag: "🇧🇷", icon: "⚽", name: "巴西", color: "#65a30d", rival: "SA" },
+    { id: "AU", flag: "🇦🇺", icon: "🪃", name: "澳洲", color: "#0369a1", rival: "ID" }
   ];
 
   var PHASES = {
@@ -26,8 +26,10 @@
     discussion: "組內討論",
     voting: "秘密投票",
     event: "事件牌",
-    block: "封鎖宣告",
+    leaderAction: "元首行動",
+    block: "元首行動",
     scored: "開票計分",
+    diplomacy: "外交會議",
     sanction: "制裁投票",
     final: "結局揭示",
     completed: "活動完成"
@@ -65,9 +67,11 @@
     roundCount: 3,
     playersPerCountry: PLAYER_COUNT,
     peaceTarget: 140,
+    autoPeaceTarget: true,
     sanctionRatio: 0.6,
     secretBonus: 5,
     sanctionPenalty: 5,
+    allianceBonus: 2,
     publicPoint: 1,
     privatePoint: 2
   };
@@ -110,12 +114,7 @@
 
   function getGameId() {
     var fromUrl = new URL(window.location.href).searchParams.get("game");
-    if (fromUrl) {
-      var sanitizedUrl = sanitizeGameId(fromUrl);
-      localStorage.setItem("leader-game-id", sanitizedUrl);
-      return sanitizedUrl;
-    }
-    return sanitizeGameId(localStorage.getItem("leader-game-id") || DEFAULT_GAME_ID);
+    return sanitizeGameId(fromUrl || DEFAULT_GAME_ID);
   }
 
   function setGameId(gameId) {
@@ -130,7 +129,10 @@
     var current = new URL(window.location.href);
     var base = current.origin + current.pathname.replace(/\/[^/]*$/, "/");
     var url = new URL(path, base);
-    url.searchParams.set("game", sanitizeGameId(gameId || getGameId()));
+    var nextGameId = sanitizeGameId(gameId || getGameId());
+    if (nextGameId !== DEFAULT_GAME_ID) {
+      url.searchParams.set("game", nextGameId);
+    }
     Object.keys(extra || {}).forEach(function (key) {
       url.searchParams.set(key, extra[key]);
     });
@@ -140,7 +142,10 @@
   function absoluteWithGame(path, gameId, extra, baseUrl) {
     var base = baseUrl || window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
     var url = new URL(path, base);
-    url.searchParams.set("game", sanitizeGameId(gameId || getGameId()));
+    var nextGameId = sanitizeGameId(gameId || getGameId());
+    if (nextGameId !== DEFAULT_GAME_ID) {
+      url.searchParams.set("game", nextGameId);
+    }
     Object.keys(extra || {}).forEach(function (key) {
       url.searchParams.set(key, extra[key]);
     });
@@ -152,11 +157,108 @@
     return Object.keys(countries)
       .map(function (id) { return countries[id]; })
       .filter(Boolean)
+      .filter(function (country) { return country.active !== false; })
       .sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+  }
+
+  function allCountries(state) {
+    var countries = state && state.countries ? state.countries : {};
+    return Object.keys(countries)
+      .map(function (id) { return countries[id]; })
+      .filter(Boolean)
+      .sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+  }
+
+  function getCountryPlayerCount(state, countryId) {
+    var country = state && state.countries ? state.countries[countryId] : null;
+    return clampNumber(country && country.playerCount ? country.playerCount : state.settings.playersPerCountry, 1, 30);
+  }
+
+  function totalPlayerCount(state) {
+    return countryList(state).reduce(function (total, country) {
+      return total + getCountryPlayerCount(state, country.id);
+    }, 0);
+  }
+
+  function dynamicConfig(state) {
+    var countries = countryList(state);
+    var playerTotal = totalPlayerCount(state);
+    var countryCount = countries.length;
+    var roundCount = clampNumber(state.settings && state.settings.roundCount, 1, 9);
+    return {
+      countryCount: countryCount,
+      totalPlayers: playerTotal,
+      roundCount: roundCount,
+      peaceTarget: Math.max(1, Math.ceil(playerTotal * roundCount * 0.6)),
+      baseGroupSize: countryCount ? Math.floor(playerTotal / countryCount) : 0,
+      remainder: countryCount ? playerTotal % countryCount : 0,
+      publicPoolMultiplier: 1.5,
+      minRecommendedCountries: 4
+    };
+  }
+
+  function applyDynamicSettings(state) {
+    state.settings = Object.assign({}, DEFAULT_SETTINGS, state.settings || {});
+    if (state.settings.autoPeaceTarget !== false) {
+      state.settings.peaceTarget = dynamicConfig(state).peaceTarget;
+    }
   }
 
   function getCountry(id) {
     return COUNTRIES.find(function (country) { return country.id === id; }) || null;
+  }
+
+  function getActiveRival(state, countryId) {
+    var country = state.countries && state.countries[countryId] ? state.countries[countryId] : getCountry(countryId);
+    if (!country) return null;
+    var activeIds = countryList(state).map(function (item) { return item.id; });
+    if (country.rival && activeIds.indexOf(country.rival) >= 0) return country.rival;
+    return activeIds.find(function (id) { return id !== countryId; }) || null;
+  }
+
+  function shuffle(items) {
+    var result = items.slice();
+    for (var i = result.length - 1; i > 0; i -= 1) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = result[i];
+      result[i] = result[j];
+      result[j] = temp;
+    }
+    return result;
+  }
+
+  function combatRingComplete(state) {
+    var activeIds = countryList(state).map(function (country) { return country.id; });
+    if (activeIds.length <= 1) return true;
+    var everyRivalIsValid = activeIds.every(function (countryId) {
+      var rival = state.countries[countryId] && state.countries[countryId].rival;
+      return rival && rival !== countryId && activeIds.indexOf(rival) >= 0;
+    });
+    if (!everyRivalIsValid) return false;
+    var seen = {};
+    var current = activeIds[0];
+    for (var i = 0; i < activeIds.length; i += 1) {
+      if (seen[current]) return false;
+      seen[current] = true;
+      current = state.countries[current].rival;
+    }
+    return current === activeIds[0] && Object.keys(seen).length === activeIds.length;
+  }
+
+  function assignCombatRing(state, randomize) {
+    var ids = countryList(state).map(function (country) { return country.id; });
+    var ordered = randomize ? shuffle(ids) : ids;
+    ordered.forEach(function (countryId, index) {
+      if (!state.countries[countryId]) return;
+      state.countries[countryId].rival = ordered.length > 1 ? ordered[(index + 1) % ordered.length] : "";
+    });
+    state.settings.combatRingUpdatedAt = now();
+    return ordered;
+  }
+
+  function roundName(roundNo) {
+    var names = ["黑暗局", "外交局", "峰會局"];
+    return names[Math.max(0, Math.min(names.length - 1, Number(roundNo || 1) - 1))];
   }
 
   function clone(value) {
@@ -172,14 +274,16 @@
       map[country.id] = Object.assign({}, country, {
         order: index,
         active: true,
-        usedBlock: false
+        playerCount: PLAYER_COUNT,
+        usedBlock: false,
+        leaderActionUsed: false
       });
       return map;
     }, {});
   }
 
   function defaultState(gameId) {
-    return {
+    var state = {
       meta: {
         version: APP_VERSION,
         gameId: sanitizeGameId(gameId),
@@ -195,6 +299,8 @@
       final: null,
       log: []
     };
+    assignCombatRing(state, false);
+    return state;
   }
 
   function ensureCountries(state) {
@@ -203,7 +309,7 @@
       state.countries[country.id] = Object.assign(
         {},
         country,
-        { order: index, active: true, usedBlock: false },
+        { order: index, active: true, playerCount: PLAYER_COUNT, usedBlock: false, leaderActionUsed: false },
         state.countries[country.id] || {}
       );
     });
@@ -242,6 +348,7 @@
     base.totals = base.totals || {};
     base.log = Array.isArray(base.log) ? base.log.slice(-80) : [];
     ensureCountries(base);
+    applyDynamicSettings(base);
     for (var i = 1; i <= (base.settings.roundCount || 3); i += 1) {
       if (base.rounds[i]) ensureRound(base, i);
     }
@@ -258,6 +365,8 @@
 
   function finalizeState(state) {
     ensureCountries(state);
+    applyDynamicSettings(state);
+    if (!combatRingComplete(state)) assignCombatRing(state, false);
     ensureRound(state, state.currentRound || 1);
     updateTotals(state);
     state.meta = state.meta || {};
@@ -407,6 +516,8 @@
     return Object.assign({
       public: 0,
       private: 0,
+      personVotes: {},
+      currentVoter: 1,
       submitted: false,
       submittedAt: null
     }, vote || {});
@@ -421,9 +532,12 @@
       public: 0,
       private: 0,
       effectivePublic: 0,
+      publicPool: 0,
       base: 0,
+      allianceBonus: 0,
       score: 0,
       blockedBy: [],
+      alliedWith: "",
       sanctioned: false
     }, round && round.scores ? round.scores[countryId] : null);
   }
@@ -486,47 +600,80 @@
     var countries = countryList(state);
     var eventId = round.event && round.event.id;
     var successfulBlocksByTarget = {};
+    var successfulAlliances = {};
 
     Object.keys(round.blocks || {}).forEach(function (fromCountryId) {
-      var block = round.blocks[fromCountryId];
-      if (!block || !block.target) return;
-      var targetVote = getVote(round, block.target);
+      var action = round.blocks[fromCountryId];
+      if (!action) return;
+      action.type = action.type || (action.target ? "block" : "skip");
+      action.resolvedAt = now();
+      if (action.type === "skip" || !action.target) {
+        action.result = "skipped";
+        return;
+      }
+      if (state.countries[fromCountryId]) {
+        state.countries[fromCountryId].usedBlock = true;
+        state.countries[fromCountryId].leaderActionUsed = true;
+      }
+      if (action.type === "alliance") return;
+      var targetVote = getVote(round, action.target);
       var success = Number(targetVote.private || 0) > 0;
-      block.result = success ? "success" : "failed";
-      block.resolvedAt = now();
+      action.result = success ? "success" : "failed";
       if (success) {
-        successfulBlocksByTarget[block.target] = successfulBlocksByTarget[block.target] || [];
-        successfulBlocksByTarget[block.target].push(fromCountryId);
-        if (state.countries[fromCountryId]) state.countries[fromCountryId].usedBlock = true;
+        successfulBlocksByTarget[action.target] = successfulBlocksByTarget[action.target] || [];
+        successfulBlocksByTarget[action.target].push(fromCountryId);
       }
     });
+
+    Object.keys(round.blocks || {}).forEach(function (fromCountryId) {
+      var action = round.blocks[fromCountryId];
+      if (!action || action.type !== "alliance" || !action.target) return;
+      var targetAction = round.blocks[action.target];
+      var success = Boolean(targetAction && targetAction.type === "alliance" && targetAction.target === fromCountryId);
+      action.result = success ? "success" : "failed";
+      if (success) successfulAlliances[fromCountryId] = action.target;
+    });
+
+    var effectivePublicByCountry = {};
+    var globalEffectivePublic = 0;
+    countries.forEach(function (country) {
+      var vote = getVote(round, country.id);
+      var playerCount = getCountryPlayerCount(state, country.id);
+      var publicVotes = clampNumber(vote.public || 0, 0, playerCount);
+      var effectivePublic = eventId === "public_double" ? publicVotes * 2 : publicVotes;
+      effectivePublicByCountry[country.id] = effectivePublic;
+      globalEffectivePublic += effectivePublic;
+    });
+
+    var publicPool = countries.length ? Math.round((globalEffectivePublic * 1.5 / countries.length) * 10) / 10 : 0;
 
     var scores = {};
     var highest = 0;
     countries.forEach(function (country) {
       var vote = getVote(round, country.id);
-      var publicVotes = clampNumber(vote.public || 0, 0, settings.playersPerCountry);
-      var privateVotes = clampNumber(vote.private || 0, 0, settings.playersPerCountry);
-      var effectivePublic = publicVotes;
-      var base = publicVotes * settings.publicPoint + privateVotes * settings.privatePoint;
+      var playerCount = getCountryPlayerCount(state, country.id);
+      var publicVotes = clampNumber(vote.public || 0, 0, playerCount);
+      var privateVotes = clampNumber(vote.private || 0, 0, playerCount);
+      var effectivePublic = effectivePublicByCountry[country.id] || 0;
+      var base = publicPool + privateVotes * settings.privatePoint;
 
-      if (eventId === "public_double") {
-        effectivePublic = publicVotes * 2;
-        base += publicVotes * settings.publicPoint;
-      }
       if (eventId === "private_double") {
         base += privateVotes * settings.privatePoint;
       }
 
       var blockedBy = successfulBlocksByTarget[country.id] || [];
-      var score = blockedBy.length ? 0 : base;
+      var allianceBonus = successfulAlliances[country.id] ? Number(settings.allianceBonus || 0) : 0;
+      var score = blockedBy.length ? 0 : base + allianceBonus;
       scores[country.id] = {
         public: publicVotes,
         private: privateVotes,
         effectivePublic: effectivePublic,
+        publicPool: publicPool,
         base: base,
+        allianceBonus: allianceBonus,
         score: score,
         blockedBy: blockedBy,
+        alliedWith: successfulAlliances[country.id] || "",
         sanctioned: false
       };
       highest = Math.max(highest, score);
@@ -562,7 +709,7 @@
   function resolveSanctions(state, roundNo) {
     var round = ensureRound(state, roundNo || state.currentRound);
     var eligible = sanctionEligibleCountries(state, round.number);
-    var threshold = Math.max(1, Math.ceil(eligible.length * Number(state.settings.sanctionRatio || 0.6)));
+    var threshold = Math.max(1, Math.floor(eligible.length / 2) + 1);
     var counts = {};
     Object.keys(round.sanctions.votes || {}).forEach(function (fromCountryId) {
       var target = round.sanctions.votes[fromCountryId] && round.sanctions.votes[fromCountryId].target;
@@ -587,9 +734,10 @@
     var finalScores = {};
     var bonuses = {};
     countryList(state).forEach(function (country) {
-      var rivalScore = Number(totals[country.rival] || 0);
+      var rivalId = getActiveRival(state, country.id);
+      var rivalScore = Number(totals[rivalId] || 0);
       var ownScore = Number(totals[country.id] || 0);
-      var bonus = ownScore > rivalScore ? Number(state.settings.secretBonus || 0) : 0;
+      var bonus = rivalId && ownScore > rivalScore ? Number(state.settings.secretBonus || 0) : 0;
       bonuses[country.id] = bonus;
       finalScores[country.id] = ownScore + bonus;
     });
@@ -651,11 +799,34 @@
 
   function countryName(state, countryId) {
     var country = state.countries && state.countries[countryId] ? state.countries[countryId] : getCountry(countryId);
-    return country ? country.flag + " " + country.name : countryId;
+    return country ? (country.icon || country.flag || country.id) + " " + country.flag + " " + country.name : countryId;
+  }
+
+  function countryIcon(country, extraClass) {
+    if (!country) return "";
+    return [
+      '<span class="country-icon ' + escapeHtml(extraClass || "") + '" style="--country-color:' + escapeHtml(country.color || "#64748b") + '">',
+      '<span>' + escapeHtml(country.icon || country.flag || country.id) + '</span>',
+      '</span>'
+    ].join("");
   }
 
   function resetState(state) {
+    var previousSettings = clone(state.settings || DEFAULT_SETTINGS);
+    var previousCountries = clone(state.countries || defaultCountries());
     var next = defaultState(state.meta && state.meta.gameId ? state.meta.gameId : getGameId());
+    next.settings = Object.assign({}, DEFAULT_SETTINGS, previousSettings);
+    Object.keys(next.countries).forEach(function (countryId) {
+      if (previousCountries[countryId]) {
+        next.countries[countryId].active = previousCountries[countryId].active !== false;
+        next.countries[countryId].playerCount = clampNumber(previousCountries[countryId].playerCount, 1, 30);
+        next.countries[countryId].rival = previousCountries[countryId].rival || next.countries[countryId].rival;
+      }
+      next.countries[countryId].usedBlock = false;
+      next.countries[countryId].leaderActionUsed = false;
+    });
+    applyDynamicSettings(next);
+    if (!combatRingComplete(next)) assignCombatRing(next, false);
     Object.keys(state).forEach(function (key) { delete state[key]; });
     Object.assign(state, next);
     addLog(state, "遊戲資料已重置");
@@ -670,6 +841,7 @@
 
   window.LeaderApp = {
     version: APP_VERSION,
+    defaultGameId: DEFAULT_GAME_ID,
     countries: COUNTRIES,
     phases: PHASES,
     events: EVENT_DECK,
@@ -684,8 +856,18 @@
     withGame: withGame,
     absoluteWithGame: absoluteWithGame,
     getCountry: getCountry,
+    getActiveRival: getActiveRival,
     countryList: countryList,
+    allCountries: allCountries,
+    totalPlayerCount: totalPlayerCount,
+    dynamicConfig: dynamicConfig,
+    applyDynamicSettings: applyDynamicSettings,
+    assignCombatRing: assignCombatRing,
+    combatRingComplete: combatRingComplete,
+    roundName: roundName,
     countryName: countryName,
+    countryIcon: countryIcon,
+    getCountryPlayerCount: getCountryPlayerCount,
     defaultState: defaultState,
     ensureRound: ensureRound,
     createStore: createStore,

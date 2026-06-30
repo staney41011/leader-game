@@ -29,7 +29,7 @@
     ];
 
     App.countryList(state).forEach(function (country) {
-      items.push(qrItem(country.flag + " " + country.name, country.id, App.absoluteWithGame("country.html", gameId, { id: country.id }, base)));
+      items.push(qrItem((country.icon || country.flag || country.id) + " " + country.flag + " " + country.name, country.id, App.absoluteWithGame("country.html", gameId, { id: country.id }, base)));
     });
 
     sheet.innerHTML = items.join("");

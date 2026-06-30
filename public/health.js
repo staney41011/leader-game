@@ -9,8 +9,9 @@
     var missing = ["apiKey", "authDomain", "databaseURL", "projectId", "appId"].filter(function (key) {
       return !config[key];
     });
+    var sessionLabel = context.gameId === App.defaultGameId ? "正式場次" : "測試場次：" + App.escapeHtml(context.gameId);
     panel.innerHTML = [
-      '<div class="section-title tight"><div><h2>目前連線</h2><p>遊戲代碼：' + App.escapeHtml(context.gameId) + '</p></div>' + App.statusPill(context.mode === "firebase" ? "Firebase 同步" : "本機 demo", context.mode === "firebase" ? "good" : "warn") + '</div>',
+      '<div class="section-title tight"><div><h2>目前連線</h2><p>' + sessionLabel + '</p></div>' + App.statusPill(context.mode === "firebase" ? "Firebase 同步" : "本機 demo", context.mode === "firebase" ? "good" : "warn") + '</div>',
       '<div class="metric-row">',
       '<div class="metric"><span>Project ID</span><strong>' + App.escapeHtml(config.projectId || "未設定") + '</strong></div>',
       '<div class="metric"><span>Database URL</span><strong>' + App.escapeHtml(config.databaseURL ? "已設定" : "未設定") + '</strong></div>',
