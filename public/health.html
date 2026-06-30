@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>連線狀態｜立德 LEADER</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="page-head">
+      <p class="eyebrow">系統檢查</p>
+      <h1>連線狀態</h1>
+      <p>確認目前使用 Firebase Realtime Database 或本機 demo 模式。</p>
+    </section>
+    <section class="panel" id="healthPanel"></section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+  <script src="health.js"></script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f766e" />
+  <title>立德 LEADER 遊戲系統</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell">
+    <section class="page-head">
+      <p class="eyebrow">立德 LEADER</p>
+      <h1>課程遊戲即時系統</h1>
+      <p>主持人主控台、13 國家介面、投票、封鎖、制裁與結局揭示。</p>
+    </section>
+
+    <section class="toolbar" aria-label="遊戲代碼">
+      <label class="field">
+        <span>遊戲代碼</span>
+        <input id="gameIdInput" type="text" autocomplete="off" />
+      </label>
+      <button class="button primary" id="saveGameIdButton" type="button">套用</button>
+      <span class="status-pill" id="storeMode">讀取中</span>
+    </section>
+
+    <section class="link-grid" aria-label="主要入口">
+      <a class="link-card accent-teal" data-route="admin.html" href="admin.html">
+        <span class="link-kicker">主持人</span>
+        <strong>主控台</strong>
+        <small>流程、計分、事件牌、封鎖與制裁</small>
+      </a>
+      <a class="link-card accent-amber" data-route="display.html" href="display.html">
+        <span class="link-kicker">投影</span>
+        <strong>大螢幕</strong>
+        <small>即時計分板與世界和平進度</small>
+      </a>
+      <a class="link-card accent-red" data-route="print.html" href="print.html">
+        <span class="link-kicker">現場</span>
+        <strong>QR 列印</strong>
+        <small>產生主控台、投影與各國入口 QR</small>
+      </a>
+      <a class="link-card accent-blue" data-route="health.html" href="health.html">
+        <span class="link-kicker">檢查</span>
+        <strong>連線狀態</strong>
+        <small>確認 Firebase 或本機 demo 模式</small>
+      </a>
+    </section>
+
+    <section>
+      <div class="section-title">
+        <h2>國家入口</h2>
+        <p>每一組用自己的國家連結進入。</p>
+      </div>
+      <div class="country-grid" id="countryLinks"></div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>

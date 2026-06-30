@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>主控台｜立德 LEADER</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app-layout">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">主持人主控台</p>
+        <h1>立德 LEADER</h1>
+      </div>
+      <nav class="top-actions" aria-label="頁面切換">
+        <a class="button ghost" data-route="index.html" href="index.html">首頁</a>
+        <a class="button ghost" data-route="display.html" href="display.html">大螢幕</a>
+        <a class="button ghost" data-route="print.html" href="print.html">QR</a>
+      </nav>
+    </header>
+
+    <section class="dashboard-grid">
+      <div class="panel span-2" id="statusPanel"></div>
+      <div class="panel" id="settingsPanel"></div>
+      <div class="panel span-2" id="flowPanel"></div>
+      <div class="panel" id="eventPanel"></div>
+      <div class="panel span-3" id="scoreboardPanel"></div>
+      <div class="panel span-2" id="votePanel"></div>
+      <div class="panel" id="dangerPanel"></div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

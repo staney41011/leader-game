@@ -1,0 +1,11 @@
+{
+  "name": "leader-course-game",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npx serve public",
+    "deploy": "firebase deploy",
+    "deploy:hosting": "firebase deploy --only hosting",
+    "deploy:rules": "firebase deploy --only database"
+  }
+}

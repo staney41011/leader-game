@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "leaderGames": {
+      "$gameId": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}

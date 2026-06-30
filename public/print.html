@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR 列印｜立德 LEADER</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="shell print-shell">
+    <section class="page-head no-print">
+      <p class="eyebrow">現場入口</p>
+      <h1>QR 列印</h1>
+      <p>列印主控台、大螢幕與 13 個國家入口。</p>
+    </section>
+    <section class="toolbar no-print">
+      <label class="field grow">
+        <span>公開網址</span>
+        <input id="baseUrlInput" type="url" />
+      </label>
+      <button class="button primary" id="renderQrButton" type="button">更新 QR</button>
+      <button class="button" id="printButton" type="button">列印</button>
+    </section>
+    <section class="qr-sheet" id="qrSheet"></section>
+  </main>
+
+  <script src="vendor/qrcode.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+  <script src="print.js"></script>
+</body>
+</html>
